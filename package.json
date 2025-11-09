@@ -7,7 +7,7 @@
     "start:dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start:prod": "cross-env NODE_ENV=production node dist/server.js",
-    "start:multi": "cross-env NODE_ENV=production node dist/cluster.js",
+    "start:multi": "npm run build && cross-env NODE_ENV=production node dist/loadBalancer.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
@@ -30,10 +30,12 @@
     "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "http-proxy-middleware": "^3.0.5",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.5",
+    "@types/http-proxy-middleware": "^0.19.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.0",
     "@types/supertest": "^6.0.3",

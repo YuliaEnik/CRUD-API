@@ -8,7 +8,7 @@ app.use(express.json());
 
 app.use('/api/users', usersRouter);
 
-app.use('*', notFoundHandler);
+app.use(notFoundHandler); 
 
 app.use(errorHandler);
 
