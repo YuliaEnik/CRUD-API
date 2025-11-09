@@ -1,5 +1,4 @@
 import { Database, User } from './types';
-import { v4 as uuidv4 } from 'uuid';
 
 class InMemoryDB {
   private db: Database = { users: [] };
@@ -14,6 +13,10 @@ class InMemoryDB {
     return InMemoryDB.instance;
   }
 
+  private generateId(): string {
+    return crypto.randomUUID();
+  }
+
   getAllUsers(): User[] {
     return [...this.db.users];
   }
@@ -24,7 +27,7 @@ class InMemoryDB {
 
   createUser(userData: Omit<User, 'id'>): User {
     const newUser: User = {
-      id: uuidv4(),
+      id: this.generateId(),
       ...userData
     };
     this.db.users.push(newUser);
@@ -50,7 +53,7 @@ class InMemoryDB {
     this.db.users.splice(userIndex, 1);
     return true;
   }
-  
+
   setData(newData: Database): void {
     this.db = newData;
   }
@@ -61,3 +64,4 @@ class InMemoryDB {
 }
 
 export const db = InMemoryDB.getInstance();
+
