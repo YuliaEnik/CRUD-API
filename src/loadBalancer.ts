@@ -1,35 +1,34 @@
-import express from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import http from 'http';
+import httpProxy from 'http-proxy';
 import os from 'os';
 
-const app = express();
 const numCPUs = os.cpus().length;
 const PORT = process.env.PORT || 4000;
 
-let currentWorker = 0;
 const workers = Array.from({ length: numCPUs }, (_, i) => 
   `http://localhost:${Number(PORT) + i + 1}`
 );
 
-app.use('/api', (req, res, next) => {
+let currentWorker = 0;
+const proxy = httpProxy.createProxyServer();
+
+const server = http.createServer((req, res) => {
   const target = workers[currentWorker % workers.length];
   currentWorker++;
   
-  const proxy = createProxyMiddleware({
-    target,
-    changeOrigin: false,
-  });
-  
-  proxy(req, res, next);
+  proxy.web(req, res, { target, changeOrigin: false });
 });
 
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Application error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+proxy.on('error', (err, req, res: any) => {
+  console.error('Proxy error:', err);
+  if (res && !res.headersSent) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Service unavailable' }));
+  }
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Load balancer running on port ${PORT}`);
 });
 
-export default app;
+export default server;
